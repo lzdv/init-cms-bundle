@@ -1,5 +1,5 @@
 {
-    "name": "networking/init-cms-bundle",
+    "name": "lzdv/init-cms-bundle",
     "description": "This Bundle is a basic cms based on symfony",
     "keywords": ["symfony", "cms"],
     "type": "symfony-bundle",

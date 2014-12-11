@@ -14,6 +14,10 @@
         <parameter key="sonata.media.admin.gallery.class">Networking\InitCmsBundle\Admin\Entity\GalleryAdmin</parameter>
         <parameter key="sonata.media.admin.gallery.controller">NetworkingInitCmsBundle:GalleryAdmin</parameter>
 
+        <!-- Gallery Has Media-->
+        <parameter key="sonata.media.admin.gallery_has_media.class">Networking\InitCmsBundle\Admin\Entity\GalleryHasMediaAdmin</parameter>
+        <parameter key="sonata.media.admin.gallery_has_media.controller">NetworkingInitCmsBundle:GalleryHasMediaAdmin</parameter>
+
     </parameters>
 
 
@@ -86,6 +90,28 @@
                 </argument>
             </call>
             <tag name="sonata.admin" manager_type="orm" label="admin_label_gallery"
+                 label_catalogue="%sonata.media.admin.media.translation_domain%"
+                 label_translator_strategy="sonata.admin.label.strategy.underscore"/>
+        </service>
+
+        <service id="sonata.media.admin.gallery_has_media" class="%sonata.media.admin.gallery_has_media.class%">
+            <argument></argument>
+            <argument>%sonata.media.admin.gallery_has_media.entity%</argument>
+            <argument>%sonata.media.admin.gallery_has_media.controller%</argument>
+            <argument type="service" id="sonata.media.pool"/>
+            <call method="setTranslationDomain">
+                <argument>%sonata.media.admin.media.translation_domain%</argument>
+            </call>
+            <!-- call method="setTemplates">
+                <argument type="collection">
+                    <argument key="layout">NetworkingInitCmsBundle::admin_layout.html.twig</argument>
+                    <argument key="list">NetworkingInitCmsBundle:GalleryHasMediaAdmin:list.html.twig</argument>
+                    <argument key="edit">NetworkingInitCmsBundle:GalleryHasMediaAdmin:edit.html.twig</argument>
+                    <argument key="show">NetworkingInitCmsBundle:CRUD:show.html.twig</argument>
+                    <argument key="ajax">NetworkingInitCmsBundle::ajax_layout.html.twig</argument>
+                </argument>
+            </call -->
+            <tag name="sonata.admin" manager_type="orm" label="admin_label_gallery_has_media"
                  label_catalogue="%sonata.media.admin.media.translation_domain%"
                  label_translator_strategy="sonata.admin.label.strategy.underscore"/>
         </service>

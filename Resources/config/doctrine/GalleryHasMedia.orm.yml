@@ -6,3 +6,10 @@ Networking\InitCmsBundle\Entity\GalleryHasMedia:
       type: integer
       generator:
         strategy: AUTO
+  fields:
+    link:
+      type: string
+      length: 150
+    caption:
+      type: string
+      length: 150

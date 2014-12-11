@@ -34,6 +34,16 @@ class GalleryHasMedia extends BaseGalleryHasMedia
     protected $id;
 
     /**
+     * @var string $link
+     */
+    protected $link;
+    
+    /**
+     * @var string $caption
+     */
+    protected $caption;
+    
+    /**
      * Get id
      *
      * @return integer $id
@@ -41,5 +51,45 @@ class GalleryHasMedia extends BaseGalleryHasMedia
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * @param $link
+     * @return $this
+     * @throws \InvalidArgumentException
+     */
+    public function setLink($link)
+    {
+        $this->link = $link;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLink()
+    {
+        return $this->link;
+    }
+
+    /**
+     * @param $caption
+     * @return $this
+     * @throws \InvalidArgumentException
+     */
+    public function setCaption($caption)
+    {
+        $this->caption = $caption;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCaption()
+    {
+        return $this->caption;
     }
 }

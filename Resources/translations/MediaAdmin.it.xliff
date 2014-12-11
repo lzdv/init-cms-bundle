@@ -134,10 +134,6 @@
                 <source>label.public_url</source>
                 <target>Public URL</target>
             </trans-unit>
-            <trans-unit id="form.label_caption">
-                <source>form.label_caption</source>
-                <target>Caption</target>
-            </trans-unit>
             <trans-unit id="label.name">
                 <source>label.name</source>
                 <target>Name</target>
@@ -264,6 +260,10 @@
             <trans-unit id="form.label_link">
                 <source>form.label_link</source>
                 <target>Link URL</target>
+            </trans-unit>
+            <trans-unit id="form.label_caption">
+                <source>form.label_caption</source>
+                <target>Descrizione</target>
             </trans-unit>
             <trans-unit id="form.label_media">
                 <source>form.label_media</source>

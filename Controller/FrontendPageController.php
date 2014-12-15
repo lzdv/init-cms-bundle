@@ -131,60 +131,49 @@ class FrontendPageController extends Controller
             $em = $this->get('doctrine_mongodb')->getManager();
         }
         
+        /*
+         * Update blocks saved as "dynamic"
+         */
         $blocks = $page->getPage()->getLayoutBlock();
-
-        echo '<pre style="font-size: 10px;">';
-        echo sizeof($blocks).' blocks<br/>';
         foreach ($blocks as $k => $block)
         {
+            $admins = $block->getContent()->getAdminContent();
+            $vars = $block->getContent()->getTemplateOptions();
+            $cntClass = get_class(current($admins['content']));
 
-            echo 'block '.$block->getId().'<br/>';
+/*
+            echo 'block '.$block->getId().' ['.get_class($block).']<br/>';
             echo '- name '.$block->getName().'<br/>';    
             echo '- zone '.$block->getZone().'<br/>';    
             echo '- content '.$block->getContent()->getContentTypeName().'<br/>';    
-
             echo '- admin cnt <br/>';
-            $admins = $block->getContent()->getAdminContent();
             echo '*    content:  '.get_class(current($admins['content'])).'<br/>';
             echo '*    template: '.$admins['template'].'<br/>';
-
             echo '- tpl opts </br>';    
-            $vars = $block->getContent()->getTemplateOptions();
-            $cntClass = get_class(current($admins['content']));
+*/
             foreach ($vars as $j => $var)
             {
                 $varClass = get_class($var);
-                echo '*   '.$j.':'.$varClass.'</br>';
 
-                /*** THE TEST CORE ***/
                 if ($cntClass==$varClass) {
                     $dynamic = true;
 
-                    echo '*   MATCHED!!!</br>';
                     $layoutBlockContent = $em->getRepository($block->getClassType())->find(
-                        $block->getObjectId()
+                        $blocks[$k]->getObjectId()
                     );
 
-                    echo '*   got updated block content</br>';
                     $block->takeSnapshot($serializer->serialize($layoutBlockContent, 'json'));
-                    //$block->setContent($layoutBlockContent);
                 }
-
-                echo '</br>';
             }
-
-
-            echo '</br>';
         }
         
         if ($dynamic)
         {
-            $jsonObject = $serializer->serialize($blocks, 'json');
-            $originalData['layout_block'] = json_decode($jsonObject);
+            $originalData['layout_block'] = json_decode($serializer->serialize($blocks, 'json'), true);
+            $data = $serializer->serialize($originalData, 'json');
             
-            $page->setVersionedData( $serializer->serialize($originalData, 'json') );
+            $page->setVersionedData( $data );
         }
-        echo '</pre>';
         
         
         if (is_null($page)) {

@@ -116,7 +116,77 @@ class FrontendPageController extends Controller
     {
         /** @var $page \Networking\InitCmsBundle\Model\PageInterface */
         $page = $request->get('_content', null);
+        $serializer = $this->get('serializer');
+        
+        $originalData = $serializer->deserialize($page->getVersionedData(), 'array', 'json');
+        
+        $dynamic = false;
 
+
+        if ($this->container->getParameter('networking_init_cms.db_driver') == 'orm') {
+            /** @var \Doctrine\Common\Persistence\ObjectManager $em */
+            $em = $this->get('doctrine')->getManager();
+        } else {
+            /** @var \Doctrine\Common\Persistence\ObjectManager $manager */
+            $em = $this->get('doctrine_mongodb')->getManager();
+        }
+        
+        $blocks = $page->getPage()->getLayoutBlock();
+
+        echo '<pre style="font-size: 10px;">';
+        echo sizeof($blocks).' blocks<br/>';
+        foreach ($blocks as $k => $block)
+        {
+
+            echo 'block '.$block->getId().'<br/>';
+            echo '- name '.$block->getName().'<br/>';    
+            echo '- zone '.$block->getZone().'<br/>';    
+            echo '- content '.$block->getContent()->getContentTypeName().'<br/>';    
+
+            echo '- admin cnt <br/>';
+            $admins = $block->getContent()->getAdminContent();
+            echo '*    content:  '.get_class(current($admins['content'])).'<br/>';
+            echo '*    template: '.$admins['template'].'<br/>';
+
+            echo '- tpl opts </br>';    
+            $vars = $block->getContent()->getTemplateOptions();
+            $cntClass = get_class(current($admins['content']));
+            foreach ($vars as $j => $var)
+            {
+                $varClass = get_class($var);
+                echo '*   '.$j.':'.$varClass.'</br>';
+
+                /*** THE TEST CORE ***/
+                if ($cntClass==$varClass) {
+                    $dynamic = true;
+
+                    echo '*   MATCHED!!!</br>';
+                    $layoutBlockContent = $em->getRepository($block->getClassType())->find(
+                        $block->getObjectId()
+                    );
+
+                    echo '*   got updated block content</br>';
+                    $block->takeSnapshot($serializer->serialize($layoutBlockContent, 'json'));
+                    //$block->setContent($layoutBlockContent);
+                }
+
+                echo '</br>';
+            }
+
+
+            echo '</br>';
+        }
+        
+        if ($dynamic)
+        {
+            $jsonObject = $serializer->serialize($blocks, 'json');
+            $originalData['layout_block'] = json_decode($jsonObject);
+            
+            $page->setVersionedData( $serializer->serialize($originalData, 'json') );
+        }
+        echo '</pre>';
+        
+        
         if (is_null($page)) {
             throw $this->createNotFoundException('no page object found');
         }

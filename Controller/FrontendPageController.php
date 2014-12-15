@@ -24,6 +24,8 @@ use Networking\InitCmsBundle\Model\PageInterface;
 use Networking\InitCmsBundle\Model\PageSnapshot;
 use Networking\InitCmsBundle\Helper\LanguageSwitcherHelper;
 
+use Networking\InitCmsBundle\Entity\DynamicLayoutBlockInterface;
+
 /**
  * Class FrontendPageController
  * @package Networking\InitCmsBundle\Controller
@@ -137,39 +139,56 @@ class FrontendPageController extends Controller
         $blocks = $page->getPage()->getLayoutBlock();
         foreach ($blocks as $k => $block)
         {
+            $dynamicBlock = false;
+            
             $admins = $block->getContent()->getAdminContent();
+            
+            // template variables got from snapshot
             $vars = $block->getContent()->getTemplateOptions();
+            
+            // container class
             $cntClass = get_class(current($admins['content']));
 
-/*
+            if (current($admins['content']) instanceof DynamicLayoutBlockInterface && current($admins['content'])->getDynamic())
+                $dynamicBlock = true;
+
+
+/**/
             echo 'block '.$block->getId().' ['.get_class($block).']<br/>';
-            echo '- name '.$block->getName().'<br/>';    
-            echo '- zone '.$block->getZone().'<br/>';    
-            echo '- content '.$block->getContent()->getContentTypeName().'<br/>';    
-            echo '- admin cnt <br/>';
+            echo '- name: '.$block->getName().'<br/>';    
+            echo '- zone: '.$block->getZone().'<br/>';    
+            echo '- dynamic: '; 
+            echo $dynamicBlock?'yepp':'nah';    
+            echo '<br/>'; 
+            echo '- content: '.$block->getContent()->getContentTypeName().'<br/>';    
+            echo '- admin cnt: <br/>';
             echo '*    content:  '.get_class(current($admins['content'])).'<br/>';
             echo '*    template: '.$admins['template'].'<br/>';
-            echo '- tpl opts </br>';    
-*/
-            foreach ($vars as $j => $var)
+            echo '- tpl opts <hr>';    
+//*/
+            if ($dynamicBlock)
             {
-                $varClass = get_class($var);
+                foreach ($vars as $j => $var)
+                {
+                    $varClass = get_class($var);
 
-                if ($cntClass==$varClass) {
-                    $dynamic = true;
+                    if ($cntClass==$varClass) {
+                        $dynamic = true;
 
-                    $layoutBlockContent = $em->getRepository($block->getClassType())->find(
-                        $blocks[$k]->getObjectId()
-                    );
+                        $layoutBlockContent = $em->getRepository($block->getClassType())->find(
+                            $blocks[$k]->getObjectId()
+                        );
 
-                    $block->takeSnapshot($serializer->serialize($layoutBlockContent, 'json'));
+                        $block->takeSnapshot($serializer->serialize($layoutBlockContent, 'json'));
+                    }
                 }
+    
+                $originalData['layout_block'][$k] = json_decode($serializer->serialize($block, 'json'), true);
             }
         }
         
         if ($dynamic)
         {
-            $originalData['layout_block'] = json_decode($serializer->serialize($blocks, 'json'), true);
             $data = $serializer->serialize($originalData, 'json');
             
             $page->setVersionedData( $data );

@@ -8,6 +8,8 @@
 
 namespace Networking\InitCmsBundle\Entity;
 
+use Symfony\Component\HttpFoundation\Request;
+use \Doctrine\ORM\EntityManager;
 /**
  *
  * @author rad
@@ -16,5 +18,8 @@ interface DynamicLayoutBlockInterface {
     
     public function setDynamic($isDynamic);
     public function getDynamic();
+    
+    public function getDynamicDataManagerName();
+    public function setDynamicData($data);
     
 }

@@ -118,82 +118,6 @@ class FrontendPageController extends Controller
     {
         /** @var $page \Networking\InitCmsBundle\Model\PageInterface */
         $page = $request->get('_content', null);
-        $serializer = $this->get('serializer');
-        
-        $originalData = $serializer->deserialize($page->getVersionedData(), 'array', 'json');
-        
-        $dynamic = false;
-
-
-        if ($this->container->getParameter('networking_init_cms.db_driver') == 'orm') {
-            /** @var \Doctrine\Common\Persistence\ObjectManager $em */
-            $em = $this->get('doctrine')->getManager();
-        } else {
-            /** @var \Doctrine\Common\Persistence\ObjectManager $manager */
-            $em = $this->get('doctrine_mongodb')->getManager();
-        }
-        
-        /*
-         * Update blocks saved as "dynamic"
-         */
-        $blocks = $page->getPage()->getLayoutBlock();
-        foreach ($blocks as $k => $block)
-        {
-            $dynamicBlock = false;
-            
-            $admins = $block->getContent()->getAdminContent();
-            
-            // template variables got from snapshot
-            $vars = $block->getContent()->getTemplateOptions();
-            
-            // container class
-            $cntClass = get_class(current($admins['content']));
-
-            if (current($admins['content']) instanceof DynamicLayoutBlockInterface && current($admins['content'])->getDynamic())
-                $dynamicBlock = true;
-
-
-/**/
-            echo 'block '.$block->getId().' ['.get_class($block).']<br/>';
-            echo '- name: '.$block->getName().'<br/>';    
-            echo '- zone: '.$block->getZone().'<br/>';    
-            echo '- dynamic: '; 
-            echo $dynamicBlock?'yepp':'nah';    
-            echo '<br/>'; 
-            echo '- content: '.$block->getContent()->getContentTypeName().'<br/>';    
-            echo '- admin cnt: <br/>';
-            echo '*    content:  '.get_class(current($admins['content'])).'<br/>';
-            echo '*    template: '.$admins['template'].'<br/>';
-            echo '- tpl opts <hr>';    
-//*/
-            if ($dynamicBlock)
-            {
-                foreach ($vars as $j => $var)
-                {
-                    $varClass = get_class($var);
-
-                    if ($cntClass==$varClass) {
-                        $dynamic = true;
-
-                        $layoutBlockContent = $em->getRepository($block->getClassType())->find(
-                            $blocks[$k]->getObjectId()
-                        );
-
-                        $block->takeSnapshot($serializer->serialize($layoutBlockContent, 'json'));
-                    }
-                }
-    
-                $originalData['layout_block'][$k] = json_decode($serializer->serialize($block, 'json'), true);
-            }
-        }
-        
-        if ($dynamic)
-        {
-            $data = $serializer->serialize($originalData, 'json');
-            
-            $page->setVersionedData( $data );
-        }
-        
         
         if (is_null($page)) {
             throw $this->createNotFoundException('no page object found');
@@ -234,7 +158,6 @@ class FrontendPageController extends Controller
 
     public function getLiveParameters(Request $request, PageSnapshot $pageSnapshot)
     {
-
         /** @var $page PageInterface */
         $page = $this->getPageHelper()->unserializePageSnapshotData($pageSnapshot);
 
@@ -252,7 +175,59 @@ class FrontendPageController extends Controller
                 throw new AccessDeniedException();
             }
         }
+        
+        
+        $serializer = $this->get('serializer');
+        if ($this->container->getParameter('networking_init_cms.db_driver') == 'orm') {
+            /** @var \Doctrine\Common\Persistence\ObjectManager $em */
+            $em = $this->get('doctrine')->getManager();
+        } else {
+            /** @var \Doctrine\Common\Persistence\ObjectManager $manager */
+            $em = $this->get('doctrine_mongodb')->getManager();
+        }        
 
+        $blocks = $page->getLayoutBlock();
+        
+        foreach ($blocks as $k => $block)
+        {
+            $view = $serializer->deserialize(
+                    $block->getSnapshotContent(), 
+                    $block->getClassType(),
+                    'json'
+            );
+
+            /*
+            echo '<pre style="font-size: 10px">';
+            echo $serializer->serialize($view, 'json');
+            echo '</pre>';
+            */
+
+            if (!$view instanceof DynamicLayoutBlockInterface || !$view->getDynamic()) {
+                // no dynamic block, so go on
+                continue;
+            }
+            
+            // get the block view class
+            $freshView = $em->getRepository($block->getClassType())->find(
+                $block->getObjectId()
+            );
+            
+            $svcName = $freshView->getDynamicDataManagerName();
+            
+            if ($svcName!='')
+            {
+                $svc = $this->get( $svcName );
+                $data = $svc->genericFind(array( 'request' => $request )); // sostituire findall con un metodo standard di un servizio nuovo che prenda in input la request
+                $freshView->setDynamicData( $data );
+                
+            }
+            
+            $blocks[$k]->takeSnapshot($serializer->serialize($freshView, 'json'));
+        }
+
+        $page->setLayoutBlock($blocks);
+        $page->orderLayoutBlocks();
+        
         return array('page' => $page, 'admin_pool' => $this->getAdminPool());
     }
 

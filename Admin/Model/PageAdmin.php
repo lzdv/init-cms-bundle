@@ -256,6 +256,11 @@ abstract class PageAdmin extends BaseAdmin
                                 ),
                         ),
                         array('display_method' => 'getAliasFullPath')
+                    )
+                    ->add(
+                        'aliasQueryString',
+                        null,
+                        array('help_block' => 'alias_query_string.helper.text')
                     );
             }
 

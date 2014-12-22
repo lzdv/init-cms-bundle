@@ -33,6 +33,11 @@ Networking\InitCmsBundle\Entity\BasePage:
       gedmo:
         treePath:
           separator: '/'
+    aliasQueryString:
+      type: string
+      length: 1024
+      nullable: true
+      column: alias_qs
     level:
       type: integer
       column: lvl

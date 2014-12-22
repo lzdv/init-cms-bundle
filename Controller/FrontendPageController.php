@@ -102,12 +102,14 @@ class FrontendPageController extends Controller
      */
     public function getRedirect(Request $request, PageInterface $page)
     {
+        
         if (method_exists($page, 'getAlias') && $page instanceof PageInterface) {
             if ($alias = $page->getAlias()) {
                 $alias->getFullPath();
                 $baseUrl = $request->getBaseUrl();
+                $queryString = $page->getAliasQueryString() ? '?'.$page->getAliasQueryString() : '';
 
-                return new RedirectResponse($baseUrl . $alias->getFullPath());
+                return new RedirectResponse($baseUrl . $alias->getFullPath() . $queryString );
             }
         }
 

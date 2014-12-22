@@ -82,6 +82,10 @@
                 <source>form.label_alias</source>
                 <target>Redirect to this page</target>
             </trans-unit>
+            <trans-unit id="form.label_alias_query_string">
+                <source>form.label_alias_query_string</source>
+                <target>Parameters for the redirect page</target>
+            </trans-unit>
             <trans-unit id="form.label_active_from">
                 <source>form.label_active_from</source>
                 <target>Online from</target>
@@ -328,6 +332,10 @@
                 <source>alias</source>
                 <target>Redirect to this page</target>
             </trans-unit>
+            <trans-unit id="alias_query_string">
+                <source>alias</source>
+                <target>Parameters for redirect page</target>
+            </trans-unit>
             <trans-unit id="url">
                 <source>url</source>
                 <target>URL</target>
@@ -482,6 +490,10 @@
             <trans-unit id="alias.helper.text">
                 <source>alias.helper.text</source>
                 <target>Redirect to another page, has itself no content.</target>
+            </trans-unit>
+            <trans-unit id="alias_query_string.helper.text">
+                <source>alias_query_string.helper.text</source>
+                <target>Parameters to be used to call the redirect page.</target>
             </trans-unit>
             <trans-unit id="visibility.helper.text">
                 <source>visibility.helper.text</source>

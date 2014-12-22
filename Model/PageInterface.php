@@ -165,6 +165,16 @@ interface PageInterface extends \Symfony\Cmf\Component\Routing\RouteReferrersRea
     public function getAlias();
 
     /**
+     * @param string $qs
+     */
+    public function setAliasQueryString($qs = null);
+
+    /**
+     * @return string
+     */
+    public function getAliasQueryString();
+
+    /**
      * @param  array $parents
      * @return $this
      */

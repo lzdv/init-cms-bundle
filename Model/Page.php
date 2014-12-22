@@ -104,6 +104,11 @@ abstract class Page implements PageInterface
     protected $alias;
 
     /**
+     * @var PageInterface $alias
+     */
+    protected $aliasQueryString;
+
+    /**
      * @var ArrayCollection $layoutBlock
      */
     protected $layoutBlock;
@@ -416,6 +421,22 @@ abstract class Page implements PageInterface
     public function getAlias()
     {
         return $this->alias;
+    }
+
+    /**
+     * @param PageInterface $alias
+     */
+    public function setAliasQueryString($qs = null)
+    {
+        $this->aliasQueryString = $qs;
+    }
+
+    /**
+     * @return PageInterface
+     */
+    public function getAliasQueryString()
+    {
+        return $this->aliasQueryString;
     }
 
     /**

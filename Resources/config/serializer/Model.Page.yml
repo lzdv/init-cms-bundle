@@ -28,6 +28,8 @@ Networking\InitCmsBundle\Model\Page:
             accessor:
                 getter: convertAliasToInteger
             type: integer
+        aliasQueryString:
+            type: string
         parents:
             accessor:
                 getter: convertParentsToArray

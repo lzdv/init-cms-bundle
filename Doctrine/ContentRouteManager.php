@@ -22,6 +22,8 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Routing\RouteCollection;
 use Networking\InitCmsBundle\Model\ContentRouteInterface;
 use Doctrine\ORM\EntityManager;
+
+use Networking\InitCmsBundle\Entity\ContentRoute;
 /**
  * Class ContentRouteManager
  * @package Networking\InitCmsBundle\Doctrine
@@ -99,6 +101,7 @@ abstract class ContentRouteManager extends BaseContentRouteManager
      */
     public function findContentRoutesBy($url)
     {
+        
         $collection = new RouteCollection();
 
         /** @var $connection \Doctrine\DBAL\Connection */
@@ -114,23 +117,67 @@ abstract class ContentRouteManager extends BaseContentRouteManager
         }
 
         $searchUrl = (substr($url, -1) != '/') ? $url . '/' : $url;
+        $urlVariable = '';
 
-
-        $params = array('path' => $searchUrl);
-
-
+//        $params = array('path' => $searchUrl);
         try {
-            $contentRoutes = $this->repository->findBy($params);
+//            $contentRoutes = $this->repository->findBy($params);          
+            $qb = $this->repository->createQueryBuilder('c');
+            
+            $qb->select()
+                ->where('c.path = :url')
+                ->setParameters(array('url' => $searchUrl));
+            $contentRoutes = $qb->getQuery()->getResult();
+            //unset($qb);
+
+            if (empty($contentRoutes))
+            {
+                // search for routes with params
+                
+                if (substr($searchUrl, 0, 1) == '/') $searchUrl = substr($searchUrl, 1);
+                if (substr($searchUrl, -1) == '/') $searchUrl = substr($searchUrl, 0, strlen($searchUrl)-1);
+                $chunks = explode('/', $searchUrl);
+                
+                do
+                {
+                    $urlVariable = array_pop($chunks);
+                    $searchUrl = '/'.implode('/', $chunks).'/%{%}%';
+
+                    $qb->select()
+                        ->where('c.path like :url')
+                        ->setParameters(array('url' => $searchUrl));
+                    $contentRoutes = $qb->getQuery()->getResult();
+//                    echo $qb->getQuery()->getDQL().'<br/>';
+//                    echo var_dump($qb->getQuery()->getParameters()).'<br/>';
+                    
+                } while (!empty($contentRoutes) && sizeof($chunks)>1);
+
+//echo '<pre>';
+//var_dump($urlVariable);
+//var_dump($contentRoutes);
+//echo '</pre>';
+//die;
+                unset($qb);
+            }
+            
+//        $vars = preg_match('/(:[a-z0-9_-]+)/i',$url, $matches);
+//        $cleanUrl = preg_replace('/(:[a-z0-9_-]+)/i','', $searchUrl);
+        
         } catch (\Doctrine\DBAL\DBALException $e) {
 
             return $collection;
         }
 
+//echo '<pre>';
+//var_dump($contentRoutes);
+//echo '</pre>';
 
         if (empty($contentRoutes)) {
             return $collection;
         }
 
+        // set route variables
+        
         $tempContentRoutes = array_filter($contentRoutes, array($this, 'filterByLocale'));
 
 
@@ -142,25 +189,39 @@ abstract class ContentRouteManager extends BaseContentRouteManager
 
         foreach ($tempContentRoutes as $key => $contentRoute) {
 
-
             $viewStatus = ($this->request)?$this->request->getSession()->get('_viewStatus', VersionableInterface::STATUS_PUBLISHED): VersionableInterface::STATUS_PUBLISHED;
 
 
             $test = new \ReflectionClass($contentRoute->getClassType());
+//die(get_class($contentRoute));
 
             if ($viewStatus == VersionableInterface::STATUS_DRAFT && ($test->implementsInterface('Networking\InitCmsBundle\Doctrine\Extensions\Versionable\ResourceVersionInterface') )) {
                 continue;
             } elseif ($viewStatus == VersionableInterface::STATUS_PUBLISHED && ($test->implementsInterface('Networking\InitCmsBundle\Doctrine\Extensions\Versionable\VersionableInterface'))) {
                 continue;
             }
+            
 
             /** @var \Networking\InitCmsBundle\Model\ContentRouteInterface $contentRoute */
+            
+            $c = \Symfony\Component\Routing\RouteCompiler::compile($contentRoute);
+            
+            if (sizeof($c->getVariables()))
+            {
+                // saves the variable in request
+                $this->request->request->set($c->getVariables()[0], $urlVariable);
+                // saves the variable inside the route as a default
+                $contentRoute->addDefaults(array($c->getVariables()[0] => $urlVariable));
+            }
+            
             $content = $this->getRouteContent($contentRoute);
-
             $contentRoute->setContent($content);
-
             $contentRoute->setPath($url);
-
+            
+//$c = \Symfony\Component\Routing\RouteCompiler::compile($contentRoute);
+//echo '<pre>';
+//var_dump($c);
+//echo '</pre>';
 
             $collection->add(
                 self::ROUTE_GENERATE_DUMMY_NAME . preg_replace('/[^a-z0-9A-Z_.]/', '_', $key),

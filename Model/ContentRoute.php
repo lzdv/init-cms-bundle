@@ -76,6 +76,12 @@ class ContentRoute extends AbstractRoute implements ContentRouteInterface
     protected $template;
 
     /**
+     * template variables initialized from ContentRouteManager while parsing url
+     * @var array $variables
+     */
+    protected $variables;
+
+    /**
      * @var string $templateName
      *
      * @ORM\Column(name="template_name", type="string", length=255, nullable=true)

@@ -59,7 +59,7 @@ class FrontendPageController extends Controller
      */
     public function indexAction(Request $request)
     {
-
+        
         $params = $this->getPageParameters($request);
 
         if($params instanceof RedirectResponse){

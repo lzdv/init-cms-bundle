@@ -10,6 +10,8 @@ Networking\InitCmsBundle\Entity\GalleryHasMedia:
     link:
       type: string
       length: 150
+      nullable: true
     caption:
       type: string
-      length: 150
+      length: 512
+      nullable: true

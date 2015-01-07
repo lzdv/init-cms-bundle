@@ -161,6 +161,19 @@ class NetworkingHelperExtension extends \Twig_Extension implements ContainerAwar
             return false;
         }
     }
+    
+    
+    public function getGlobals()
+    {
+        $route = $this->getService('request')->get('_route_object');
+        $defaults = $route instanceof \Networking\InitCmsBundle\Entity\ContentRoute ? $route->getDefaults() : array();
+        
+        //var_dump($defaults);
+        
+        return array(
+            'route_params' => isset($defaults['route_params']) ? $defaults['route_params'] : array()
+        );
+    }
 
     /**
      * Returns an HTML block for output in the frontend
@@ -192,9 +205,10 @@ class NetworkingHelperExtension extends \Twig_Extension implements ContainerAwar
 
             return '---';
         }
+        
 
         $options = $contentItem->getTemplateOptions($params);
-
+        
         $options = array_merge($options, $params);
 
 

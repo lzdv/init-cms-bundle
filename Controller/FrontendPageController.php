@@ -50,7 +50,7 @@ class FrontendPageController extends Controller
         return false;
     }
 
-
+    
     /**
      * Render the page
      *
@@ -60,11 +60,21 @@ class FrontendPageController extends Controller
     public function indexAction(Request $request)
     {
         
+        $defaults = $request->get('_route_object')->getDefaults();
+        $routeParams = array('route_params' => array());
+        if (isset($defaults['route_params'])) $routeParams['route_params'] = $defaults['route_params'];
+        foreach($routeParams['route_params'] as $k => $v) {
+            $request->query->set($k, $v);
+        }
+        
         $params = $this->getPageParameters($request);
 
         if($params instanceof RedirectResponse){
             return $params;
         }
+
+        $params = array_merge($params, $routeParams);
+        
 
         $response = $this->render(
             $request->get('_template'),

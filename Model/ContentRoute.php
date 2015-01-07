@@ -311,7 +311,7 @@ class ContentRoute extends AbstractRoute implements ContentRouteInterface
         $template = new Template(array('template' => $this->getTemplate(), 'vars' => array()));
 
         return array(
-            'route_params' => '',
+            'route_params' => parent::getDefaults(),
             '_locale' => $this->getLocale(),
             self::CONTROLLER_NAME => $this->getController(),
             self::TEMPLATE_NAME => $template,

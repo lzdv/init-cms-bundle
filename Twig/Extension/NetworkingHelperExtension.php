@@ -800,11 +800,13 @@ class NetworkingHelperExtension extends \Twig_Extension implements ContainerAwar
      */
     public static function camelize($property)
     {
-        return preg_replace(
-            array('/(^|_| )+(.)/e', '/\.(.)/e'),
-            array("strtoupper('\\2')", "'_'.strtoupper('\\1')"),
-            $property
-        );
+        if (preg_match('/(^|_|-)+(.)/', $property, $matches)) {
+            $property = str_replace($matches[0], strtoupper($matches[2]), $property);
+        }
+        if (preg_match('/\.(.)/', $property, $matches)) {
+            $property = str_replace($matches[0], '_'.strtoupper($matches[1]), $property);
+        }
+        return $property;
     }
 
     /**

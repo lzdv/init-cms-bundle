@@ -11,7 +11,7 @@
 namespace Networking\InitCmsBundle\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Gedmo\Sluggable\Util\Urlizer;
+use Networking\InitCmsBundle\Validator\Transliterator;
 use Networking\InitCmsBundle\Model\PageInterface;
 use Networking\InitCmsBundle\Model\LayoutBlockInterface;
 use Networking\InitCmsBundle\Model\ContentRouteInterface;
@@ -1067,7 +1067,11 @@ abstract class Page implements PageInterface
      */
     public function setUrl($url)
     {
-        $url = Urlizer::urlize($url);
+        
+        //$url = Urlizer::urlize($url); // it removes {} characters
+        
+        $url = Transliterator::unaccent($url);
+        $url = Transliterator::postProcessParametricUrl($url, '-');
         $this->url = $url;
     }
 

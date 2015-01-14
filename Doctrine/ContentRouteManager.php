@@ -129,6 +129,7 @@ abstract class ContentRouteManager extends BaseContentRouteManager
                 ->setParameters(array('url' => $searchUrl));
             $contentRoutes = $qb->getQuery()->getResult();
             //unset($qb);
+            //die($qb->getQuery()->getSQL().' - '.$searchUrl);
 
             if (empty($contentRoutes))
             {
@@ -140,23 +141,18 @@ abstract class ContentRouteManager extends BaseContentRouteManager
                 
                 do
                 {
-                    $urlVariable = array_pop($chunks);
                     $searchUrl = '/'.implode('/', $chunks).'/%{%}%';
 
                     $qb->select()
                         ->where('c.path like :url')
                         ->setParameters(array('url' => $searchUrl));
                     $contentRoutes = $qb->getQuery()->getResult();
-//                    echo $qb->getQuery()->getDQL().'<br/>';
-//                    echo var_dump($qb->getQuery()->getParameters()).'<br/>';
-                    
-                } while (!empty($contentRoutes) && sizeof($chunks)>1);
 
-//echo '<pre>';
-//var_dump($urlVariable);
-//var_dump($contentRoutes);
-//echo '</pre>';
-//die;
+                    if (empty($contentRoutes))
+                        $urlVariable = array_pop($chunks);
+                    
+                } while (empty($contentRoutes) && sizeof($chunks)>0);
+
                 unset($qb);
             }
             
@@ -168,10 +164,6 @@ abstract class ContentRouteManager extends BaseContentRouteManager
             return $collection;
         }
 
-//echo '<pre>';
-//var_dump($contentRoutes);
-//echo '</pre>';
-
         if (empty($contentRoutes)) {
             return $collection;
         }
@@ -181,19 +173,18 @@ abstract class ContentRouteManager extends BaseContentRouteManager
         $tempContentRoutes = array_filter($contentRoutes, array($this, 'filterByLocale'));
 
 
+
         if (empty($tempContentRoutes)) {
             $tempContentRoutes = $contentRoutes;
+            //$tempContentRoutes = array();
         }
-
 
 
         foreach ($tempContentRoutes as $key => $contentRoute) {
 
             $viewStatus = ($this->request)?$this->request->getSession()->get('_viewStatus', VersionableInterface::STATUS_PUBLISHED): VersionableInterface::STATUS_PUBLISHED;
 
-
             $test = new \ReflectionClass($contentRoute->getClassType());
-//die(get_class($contentRoute));
 
             if ($viewStatus == VersionableInterface::STATUS_DRAFT && ($test->implementsInterface('Networking\InitCmsBundle\Doctrine\Extensions\Versionable\ResourceVersionInterface') )) {
                 continue;
@@ -215,8 +206,11 @@ abstract class ContentRouteManager extends BaseContentRouteManager
             }
             
             $content = $this->getRouteContent($contentRoute);
+            
             $contentRoute->setContent($content);
             $contentRoute->setPath($url);
+            
+//die(var_dump(array_keys($contentRoute->getDefaults())));
             
 //$c = \Symfony\Component\Routing\RouteCompiler::compile($contentRoute);
 //echo '<pre>';
@@ -229,7 +223,7 @@ abstract class ContentRouteManager extends BaseContentRouteManager
             );
 
         }
-
+        
         return $collection;
     }
 

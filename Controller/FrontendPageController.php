@@ -62,10 +62,28 @@ class FrontendPageController extends Controller
         
         $defaults = $request->get('_route_object')->getDefaults();
         $routeParams = array('route_params' => array());
-        if (isset($defaults['route_params'])) $routeParams['route_params'] = $defaults['route_params'];
+        
+        if (!empty($defaults['route_params'])) 
+        {
+            $routeParams['route_params'] = $defaults['route_params'];
+            $request->query->set('route_params_keys', array_keys($defaults['route_params']));
+        } else
+        {
+            $request->query->set('route_params_keys', array());
+        }
+        
         foreach($routeParams['route_params'] as $k => $v) {
             $request->query->set($k, $v);
         }
+        
+        
+        //if ($this->container->getParameter('kernel.debug')) {
+        //    echo '<pre>';
+        //    var_dump($defaults['route_params']);
+        //    echo '<pre>';
+        //    die;
+        //}
+
         
         $params = $this->getPageParameters($request);
 
@@ -75,7 +93,6 @@ class FrontendPageController extends Controller
 
         $params = array_merge($params, $routeParams);
         
-
         $response = $this->render(
             $request->get('_template'),
             $params

@@ -168,8 +168,6 @@ class NetworkingHelperExtension extends \Twig_Extension implements ContainerAwar
         $route = $this->getService('request')->get('_route_object');
         $defaults = $route instanceof \Networking\InitCmsBundle\Entity\ContentRoute ? $route->getDefaults() : array();
         
-        //var_dump($defaults);
-        
         return array(
             'route_params' => isset($defaults['route_params']) ? $defaults['route_params'] : array()
         );

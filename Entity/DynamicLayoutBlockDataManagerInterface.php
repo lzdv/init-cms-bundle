@@ -8,6 +8,6 @@ namespace Networking\InitCmsBundle\Entity;
 interface DynamicLayoutBlockDataManagerInterface {
     //put your code here
     
-    public function genericFind($params=array());
+    public function proxyFind();
     
 }

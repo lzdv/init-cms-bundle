@@ -245,8 +245,13 @@ class FrontendPageController extends Controller
             
             if ($svcName!='')
             {
-                $svc = $this->get( $svcName );
-                $data = $svc->genericFind(array( 'request' => $request )); // sostituire findall con un metodo standard di un servizio nuovo che prenda in input la request
+//                $svc = $this->get( $svcName );
+//                $data = $svc->genericFind(array( 'request' => $request )); // sostituire findall con un metodo standard di un servizio nuovo che prenda in input la request
+                try {
+                    $data = $this->get( $svcName )->proxyFind();
+                } catch(Exception $e) {
+                    $data = array();
+                }
                 $freshView->setDynamicData( $data );
                 
             }

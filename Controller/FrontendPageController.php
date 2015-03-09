@@ -242,13 +242,12 @@ class FrontendPageController extends Controller
             );
             
             $svcName = $freshView->getDynamicDataManagerName();
-            
             if ($svcName!='')
             {
 //                $svc = $this->get( $svcName );
 //                $data = $svc->genericFind(array( 'request' => $request )); // sostituire findall con un metodo standard di un servizio nuovo che prenda in input la request
                 try {
-                    $data = $this->get( $svcName )->proxyFind();
+                    $data = $this->get( $svcName )->proxyFind(array( 'request' => $request ));
                 } catch(Exception $e) {
                     $data = array();
                 }
